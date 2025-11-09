@@ -3,152 +3,195 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Famous City 🎄 Contagem Regressiva</title>
+  <title>Famous City — Contagem Regressiva ☃️</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
-
+  <script src="https://unpkg.com/feather-icons"></script>
   <style>
     body {
-      font-family: 'Roboto Mono', monospace;
-      background: url('https://i.pinimg.com/originals/8c/44/7a/8c447a7f52903b9b3a68839e67b76cf3.jpg') no-repeat center center fixed;
+      background: url('https://i.imgur.com/jl4s9eO.jpg') no-repeat center center fixed;
       background-size: cover;
       overflow: hidden;
       color: white;
+      font-family: 'Poppins', sans-serif;
       text-align: center;
     }
 
+    /* Chapéu do Papai Noel */
+    .santa-hat {
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 64px;
+      height: 64px;
+    }
+
+    /* Neon text */
     .neon-text {
-      color: #fff;
-      text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff66ff;
+      text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
     }
 
-    #snowCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
+    /* Contagem regressiva */
+    .countdown-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+      justify-items: center;
+      margin: 2rem 0;
     }
 
-    #gearIcon {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      cursor: pointer;
-      z-index: 10;
-      filter: drop-shadow(0 0 5px white);
+    .countdown-value {
+      font-family: 'Roboto Mono', monospace;
+      font-weight: bold;
+      font-size: 3rem;
     }
 
-    #loginPanel, #adminPanel {
-      display: none;
-      background: rgba(0, 0, 0, 0.7);
+    #days { color: #b57aff; }
+    #hours { color: #5abfff; }
+    #minutes { color: #5aff87; }
+    #seconds { color: #ffee5a; }
+
+    .countdown-label {
+      color: #00ffff;
+      font-size: 1.25rem;
+    }
+
+    /* Painéis */
+    #loginBox, #loginPanel, #adminPanel {
+      background: rgba(0,0,0,0.85);
+      border: 1px solid #00ffff;
+      border-radius: 12px;
       padding: 20px;
-      border-radius: 15px;
-      width: 90%;
-      max-width: 300px;
+      width: 300px;
       margin: 0 auto;
       position: relative;
-      z-index: 5;
+      z-index: 50;
     }
 
-    input {
-      display: block;
+    input, button {
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 8px;
       width: 100%;
-      margin: 10px 0;
-      padding: 8px;
-      border-radius: 5px;
       border: none;
     }
 
     button {
-      background-color: #ff007f;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 12px;
-      margin-top: 10px;
+      background: #00ffff;
+      color: #000;
+      font-weight: bold;
       cursor: pointer;
       transition: 0.3s;
     }
 
-    button:hover {
-      background-color: #ff4fa1;
+    button:hover { background: #00cccc; }
+
+    /* Engrenagem */
+    #gear {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      cursor: pointer;
+      font-size: 28px;
+      transition: transform 0.3s ease;
     }
 
-    audio { display: none; }
+    #gear:hover { transform: rotate(90deg); }
 
-    /* Chapéu animado */
-    .relative-title { position: relative; display: inline-block; }
-    .animate-hat {
-      position: absolute;
-      top: -6;
-      left: 0;
-      width: 48px;
-      height: 48px;
-      transform-origin: bottom left;
-      animation: swing 2s infinite ease-in-out;
+    /* Botão de som */
+    #soundToggle {
+      position: fixed;
+      bottom: 20px;
+      right: 25px;
+      cursor: pointer;
+      font-size: 26px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 50%;
+      padding: 10px;
+      transition: background 0.3s;
     }
 
-    @keyframes swing {
-      0% { transform: rotate(-15deg); }
-      50% { transform: rotate(15deg); }
-      100% { transform: rotate(-15deg); }
+    #soundToggle:hover { background: rgba(255,255,255,0.2); }
+
+    /* Efeito de neve */
+    .snowflake {
+      position: fixed;
+      top: 0;
+      color: #fff;
+      user-select: none;
+      font-size: 1em;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      to { transform: translateY(100vh); }
     }
   </style>
 </head>
 <body>
-  <canvas id="snowCanvas"></canvas>
 
-  <!-- Engrenagem -->
-  <svg id="gearIcon" xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="white" viewBox="0 0 24 24">
-    <path d="M19.14 12.94a7.07 7.07 0 000-1.88l2.03-1.58a.5.5 0 00.12-.63l-1.92-3.32a.5.5 0 00-.6-.22l-2.39.96a7.13 7.13 0 00-1.63-.95l-.36-2.54A.5.5 0 0014.9 2h-3.8a.5.5 0 00-.49.41l-.36 2.54a7.13 7.13 0 00-1.63.95l-2.39-.96a.5.5 0 00-.6.22L3.81 8.85a.5.5 0 00.12.63l2.03 1.58a7.07 7.07 0 000 1.88l-2.03 1.58a.5.5 0 00-.12.63l1.92 3.32a.5.5 0 00.6.22l2.39-.96a7.13 7.13 0 001.63.95l.36 2.54a.5.5 0 00.49.41h3.8a.5.5 0 00.49-.41l.36-2.54a7.13 7.13 0 001.63-.95l2.39.96a.5.5 0 00.6-.22l1.92-3.32a.5.5 0 00-.12-.63l-2.03-1.58zM12 15.5A3.5 3.5 0 1115.5 12 3.5 3.5 0 0112 15.5z"/>
-  </svg>
+  <!-- Santa Hat -->
+  <img src="https://cdn-icons-png.flaticon.com/512/2583/2583344.png" alt="Santa Hat" class="santa-hat">
 
-  <div class="relative z-5 mt-24">
-    <!-- Título com chapéu -->
-    <div class="relative-title mb-2">
-      <h1 class="text-4xl md:text-6xl font-bold neon-text inline-block">Famous City</h1>
-      <img src="https://cdn-icons-png.flaticon.com/512/2583/2583344.png" 
-           alt="Santa Hat" class="animate-hat" />
+  <!-- Título -->
+  <h1 class="text-4xl md:text-6xl font-bold neon-text mt-20">Famous City</h1>
+  <p class="text-xl md:text-2xl text-cyan-300 mb-8">Contagem Regressiva ☃️</p>
+
+  <!-- Contagem regressiva -->
+  <div class="countdown-container">
+    <div>
+      <div id="days" class="countdown-value">00</div>
+      <div class="countdown-label">DIAS</div>
     </div>
-    <p class="text-xl md:text-2xl text-cyan-300 mb-8">Contagem Regressiva ☃️</p>
-
-    <!-- Contagem regressiva -->
-    <div class="grid grid-cols-4 gap-4 md:gap-8 mb-12">
-      <div><div id="days" class="text-5xl md:text-8xl font-mono font-bold text-purple-400">00</div><div class="text-lg md:text-xl text-cyan-300">DIAS</div></div>
-      <div><div id="hours" class="text-5xl md:text-8xl font-mono font-bold text-blue-400">00</div><div class="text-lg md:text-xl text-cyan-300">HORAS</div></div>
-      <div><div id="minutes" class="text-5xl md:text-8xl font-mono font-bold text-green-400">00</div><div class="text-lg md:text-xl text-cyan-300">MINUTOS</div></div>
-      <div><div id="seconds" class="text-5xl md:text-8xl font-mono font-bold text-yellow-400">00</div><div class="text-lg md:text-xl text-cyan-300">SEGUNDOS</div></div>
+    <div>
+      <div id="hours" class="countdown-value">00</div>
+      <div class="countdown-label">HORAS</div>
     </div>
-
-    <!-- Login admin -->
-    <div id="loginPanel">
-      <h2 class="text-xl font-bold mb-2">Login de Administrador</h2>
-      <input type="text" id="username" placeholder="Usuário" />
-      <input type="password" id="password" placeholder="Senha" />
-      <button onclick="login()">Entrar</button>
+    <div>
+      <div id="minutes" class="countdown-value">00</div>
+      <div class="countdown-label">MINUTOS</div>
     </div>
-
-    <!-- Painel admin -->
-    <div id="adminPanel">
-      <h2 class="text-xl font-bold mb-2">Painel do Admin</h2>
-      <button onclick="adicionarMusica()">Adicionar Música</button>
-      <button onclick="trocarFundo()">Trocar Fundo</button>
-      <button onclick="logout()">Sair</button>
+    <div>
+      <div id="seconds" class="countdown-value">00</div>
+      <div class="countdown-label">SEGUNDOS</div>
     </div>
   </div>
 
-  <audio id="backgroundSound" loop>
-    <source src="https://cdn.pixabay.com/audio/2022/12/02/audio_02c8b9d3d1.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="clockTick" loop>
-    <source src="https://cdn.pixabay.com/download/audio/2023/01/03/audio_bbbf2a52bb.mp3?filename=clock-ticking-ambient-13267.mp3" type="audio/mpeg">
-  </audio>
+  <!-- Engrenagem -->
+  <div id="gear">⚙️</div>
+
+  <!-- Botão de som -->
+  <div id="soundToggle">🔊</div>
+
+  <!-- Login Box -->
+  <div id="loginBox">
+    <h2 class="text-xl mb-2">🔐 Login de Administrador</h2>
+    <input id="email" type="email" placeholder="Email" class="p-2 text-black rounded mb-2 w-64" /><br>
+    <input id="password" type="password" placeholder="Senha" class="p-2 text-black rounded mb-2 w-64" /><br>
+    <button id="loginBtn" class="bg-green-600 px-4 py-2 rounded">Entrar</button>
+    <p id="loginError" class="text-red-400 mt-2"></p>
+  </div>
+
+  <!-- Painel de Administrador -->
+  <div id="adminPanel" class="mt-10">
+    <h3 class="text-2xl mb-4">Painel de Administrador 🎅</h3>
+    <label>Mudar papel de parede:</label>
+    <input type="text" id="bgURL" placeholder="URL da imagem" class="text-black p-2 rounded w-64 mb-2">
+    <button id="changeBG" class="bg-blue-600 px-4 py-2 rounded">Alterar</button>
+    <br><br>
+    <label>Adicionar música:</label>
+    <input type="text" id="musicURL" placeholder="URL da música (mp3)" class="text-black p-2 rounded w-64 mb-2">
+    <button id="changeMusic" class="bg-green-600 px-4 py-2 rounded">Adicionar Música</button>
+  </div>
+
+  <!-- Sons -->
+  <audio id="vento" loop autoplay src="https://cdn.pixabay.com/download/audio/2022/12/16/audio_4b0e5f53a2.mp3?filename=wind-christmas.mp3"></audio>
+  <audio id="ticTac" loop autoplay src="https://cdn.pixabay.com/download/audio/2023/02/13/audio_8d4f3c34de.mp3?filename=clock-ticking-soft.mp3"></audio>
 
   <script type="module">
+    // Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
     const firebaseConfig = {
@@ -158,45 +201,79 @@
       projectId: "contagem-regressiva-natal",
       storageBucket: "contagem-regressiva-natal.firebasestorage.app",
       messagingSenderId: "995036629581",
-      appId: "1:995036629581:web:ee895d3906b7e01142aa04"
+      appId: "1:995036629581:web:ee895d3906b7e01142aa04",
+      measurementId: "G-LZ9LXK9K3P"
     };
+
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // Engrenagem mostra login
-    const gear = document.getElementById("gearIcon");
+    // Engrenagem de login
+    const gear = document.getElementById("gear");
+    const loginBox = document.getElementById("loginBox");
+    const adminPanel = document.getElementById("adminPanel");
+    const soundToggle = document.getElementById("soundToggle");
+    const vento = document.getElementById("vento");
+    const ticTac = document.getElementById("ticTac");
+
     gear.addEventListener("click", () => {
-      const login = document.getElementById("loginPanel");
-      login.style.display = login.style.display === "none" || login.style.display === "" ? "block" : "none";
+      loginBox.style.display = loginBox.style.display === "block" ? "none" : "block";
     });
 
-    function login() {
-      const user = document.getElementById("username").value;
-      const pass = document.getElementById("password").value;
-      if (user === "admin" && pass === "1234") {
-        document.getElementById("loginPanel").style.display = "none";
-        document.getElementById("adminPanel").style.display = "block";
-      } else { alert("Usuário ou senha incorretos!"); }
-    }
+    // Login Firebase
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        document.getElementById("loginError").textContent = "";
+        loginBox.style.display = "none";
+      } catch (err) {
+        document.getElementById("loginError").textContent = "Email ou senha incorretos!";
+      }
+    });
 
-    function logout() { document.getElementById("adminPanel").style.display = "none"; }
+    // Exibir painel só para administradores
+    onAuthStateChanged(auth, (user) => {
+      if (user) adminPanel.style.display = "block";
+      else adminPanel.style.display = "none";
+    });
 
-    function adicionarMusica() {
-      const url = prompt("URL da música (mp3):");
-      if (url) set(ref(db, "config/musica"), url);
-    }
-    function trocarFundo() {
-      const url = prompt("URL do novo fundo:");
-      if (url) set(ref(db, "config/fundo"), url);
-    }
+    // Trocar papel de parede
+    document.getElementById("changeBG").addEventListener("click", () => {
+      const url = document.getElementById("bgURL").value;
+      if (url) {
+        set(ref(db, "config/bg"), url);
+      }
+    });
 
-    onValue(ref(db, "config"), (snapshot) => {
-      const data = snapshot.val();
-      if (data?.fundo) document.body.style.backgroundImage = `url('${data.fundo}')`;
-      if (data?.musica) {
-        const music = document.getElementById("backgroundSound");
-        music.src = data.musica;
-        music.play();
+    // Trocar música
+    document.getElementById("changeMusic").addEventListener("click", () => {
+      const url = document.getElementById("musicURL").value;
+      if (url) {
+        set(ref(db, "config/music"), url);
+      }
+    });
+
+    // Atualizações em tempo real
+    onValue(ref(db, "config/bg"), (snapshot) => {
+      const bg = snapshot.val();
+      if (bg) document.body.style.backgroundImage = `url('${bg}')`;
+    });
+
+    onValue(ref(db, "config/music"), (snapshot) => {
+      const music = snapshot.val();
+      if (music) {
+        let player = document.getElementById("musicPlayer");
+        if (!player) {
+          player = document.createElement("audio");
+          player.id = "musicPlayer";
+          player.controls = true;
+          player.autoplay = true;
+          document.body.appendChild(player);
+        }
+        player.src = music;
       }
     });
 
@@ -205,33 +282,44 @@
     setInterval(() => {
       const now = new Date().getTime();
       const diff = targetDate - now;
-      const days = Math.floor(diff / (1000*60*60*24));
-      const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
-      const minutes = Math.floor((diff % (1000*60*60)) / (1000*60));
-      const seconds = Math.floor((diff % (1000*60)) / 1000);
-      document.getElementById("days").textContent = days.toString().padStart(2,'0');
-      document.getElementById("hours").textContent = hours.toString().padStart(2,'0');
-      document.getElementById("minutes").textContent = minutes.toString().padStart(2,'0');
-      document.getElementById("seconds").textContent = seconds.toString().padStart(2,'0');
-    },1000);
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+      document.getElementById("days").innerText = d.toString().padStart(2, "0");
+      document.getElementById("hours").innerText = h.toString().padStart(2, "0");
+      document.getElementById("minutes").innerText = m.toString().padStart(2, "0");
+      document.getElementById("seconds").innerText = s.toString().padStart(2, "0");
+    }, 1000);
 
-    // Sons
-    const clockSound = document.getElementById("clockTick");
-    const bgSound = document.getElementById("backgroundSound");
-    clockSound.volume = 0.3; bgSound.volume = 0.2;
-    clockSound.play(); bgSound.play();
+    // Controle de som
+    let soundOn = true;
+    soundToggle.addEventListener("click", () => {
+      soundOn = !soundOn;
+      if (soundOn) {
+        vento.play();
+        ticTac.play();
+        soundToggle.textContent = "🔊";
+      } else {
+        vento.pause();
+        ticTac.pause();
+        soundToggle.textContent = "🔇";
+      }
+    });
 
-    // Neve
-    const canvas = document.getElementById("snowCanvas");
-    const ctx = canvas.getContext("2d");
-    let flakes = [];
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.addEventListener("resize", resize); resize();
-    for(let i=0;i<100;i++) flakes.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*4+1, d:Math.random()});
-    function drawSnow(){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle="white"; ctx.beginPath(); for(let i=0;i<flakes.length;i++){ const f=flakes[i]; ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true);} ctx.fill(); updateSnow(); }
-    function updateSnow(){ for(let i=0;i<flakes.length;i++){ const f=flakes[i]; f.y += Math.pow(f.d,2)+1; if(f.y>canvas.height){ flakes[i]={x:Math.random()*canvas.width,y:0,r:f.r,d:f.d}; } } }
-    setInterval(drawSnow,33);
-
+    // Efeito de neve
+    function createSnow() {
+      const snowflake = document.createElement('div');
+      snowflake.innerHTML = '❄️';
+      snowflake.classList.add('snowflake');
+      snowflake.style.left = Math.random() * window.innerWidth + 'px';
+      snowflake.style.animationDuration = 5 + Math.random() * 5 + 's';
+      snowflake.style.fontSize = 10 + Math.random() * 20 + 'px';
+      document.body.appendChild(snowflake);
+      setTimeout(() => snowflake.remove(), 10000);
+    }
+    setInterval(createSnow, 200);
   </script>
+
 </body>
 </html>
