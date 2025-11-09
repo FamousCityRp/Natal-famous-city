@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Famous City — Contagem Regressiva ☃️</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    body {
+      background: linear-gradient(180deg, #0a0a0a 0%, #1e1e2f 100%);
+      color: white;
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Fundo de neve */
+    .snowfall {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-image: url('https://cdn.pixabay.com/photo/2016/03/09/09/17/snow-1245745_960_720.png');
+      background-size: cover;
+      opacity: 0.3;
+      animation: snow 20s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes snow {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 1000px; }
+    }
+
+    /* Neon text */
+    .neon-text {
+      text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+    }
+
+    /* Admin panel */
+    #adminPanel {
+      background: rgba(0, 0, 0, 0.8);
+      border: 1px solid #00ffff;
+      border-radius: 12px;
+      padding: 20px;
+      width: 300px;
+      text-align: center;
+      display: none;
+    }
+
+    input, button {
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 8px;
+      width: 100%;
+      border: none;
+    }
+
+    button {
+      background: #00ffff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #00cccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="snowfall"></div>
+
+  <main class="relative z-10 flex flex-col items-center justify-center min-h-screen text-center px-4">
+    <!-- Chapéu do Papai Noel -->
+    <div class="absolute -top-10 left-1/2 transform -translate-x-1/2">
+      <img src="https://cdn-icons-png.flaticon.com/512/2583/2583344.png" alt="Santa Hat" class="w-16 h-16" />
+    </div>
+
+    <h1 class="text-4xl md:text-6xl font-bold neon-text mb-2">Famous City</h1>
+    <p class="text-xl md:text-2xl text-cyan-300 mb-8">Contagem Regressiva ☃️</p>
+
+    <!-- Contagem regressiva -->
+    <div class="grid grid-cols-4 gap-4 md:gap-8 mb-12">
+      <div>
+        <div id="days" class="text-5xl md:text-8xl font-mono font-bold text-purple-400">00</div>
+        <div class="text-lg md:text-xl text-cyan-300">DIAS</div>
+      </div>
+      <div>
+        <div id="hours" class="text-5xl md:text-8xl font-mono font-bold text-blue-400">00</div>
+        <div class="text-lg md:text-xl text-cyan-300">HORAS</div>
+      </div>
+      <div>
+        <div id="minutes" class="text-5xl md:text-8xl font-mono font-bold text-green-400">00</div>
+        <div class="text-lg md:text-xl text-cyan-300">MINUTOS</div>
+      </div>
+      <div>
+        <div id="seconds" class="text-5xl md:text-8xl font-mono font-bold text-yellow-400">00</div>
+        <div class="text-lg md:text-xl text-cyan-300">SEGUNDOS</div>
+      </div>
+    </div>
+
+    <!-- Login Admin -->
+    <div id="loginPanel" class="mt-4">
+      <input type="text" id="username" placeholder="Usuário" />
+      <input type="password" id="password" placeholder="Senha" />
+      <button onclick="login()">Entrar</button>
+    </div>
+
+    <!-- Painel Admin -->
+    <div id="adminPanel">
+      <h2 class="text-xl font-bold mb-2">Painel do Admin</h2>
+      <button onclick="adicionarMusica()">Adicionar Música</button>
+      <button onclick="pararMusica()">Parar Música</button>
+      <button onclick="logout()">Sair</button>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+    // 👉 Cole aqui seu firebaseConfig
+const firebaseConfig = {
+  apiKey: "AIzaSyCiq9bp2URA4txauF9-2QKrX52VlSRnpEQ",
+  authDomain: "contagem-regressiva-natal.firebaseapp.com",
+  databaseURL: "https://contagem-regressiva-natal-default-rtdb.firebaseio.com",
+  projectId: "contagem-regressiva-natal",
+  storageBucket: "contagem-regressiva-natal.firebasestorage.app",
+  messagingSenderId: "995036629581",
+  appId: "1:995036629581:web:ee895d3906b7e01142aa04",
+  measurementId: "G-LZ9LXK9K3P"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Sons automáticos
+    const snowSound = new Howl({
+      src: ['https://cdn.pixabay.com/audio/2022/03/15/audio_38cc9b4ff8.mp3'],
+      loop: true,
+      volume: 0.3
+    });
+
+    const tickSound = new Howl({
+      src: ['https://cdn.pixabay.com/audio/2022/03/15/audio_74f2b0c3a0.mp3'],
+      loop: true,
+      volume: 0.3
+    });
+
+    let musicPlayer = null;
+
+    window.onload = () => {
+      snowSound.play();
+      tickSound.play();
+    };
+
+    // Contagem regressiva
+    const targetDate = new Date("January 1, 2026 00:00:00").getTime();
+
+    setInterval(() => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById("days").innerText = days.toString().padStart(2, "0");
+      document.getElementById("hours").innerText = hours.toString().padStart(2, "0");
+      document.getElementById("minutes").innerText = minutes.toString().padStart(2, "0");
+      document.getElementById("seconds").innerText = seconds.toString().padStart(2, "0");
+    }, 1000);
+
+    // Login Admin
+    function login() {
+      const user = document.getElementById("username").value;
+      const pass = document.getElementById("password").value;
+      if (user === "admin" && pass === "1234") {
+        document.getElementById("loginPanel").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+      } else {
+        alert("Usuário ou senha incorretos!");
+      }
+    }
+
+    function logout() {
+      document.getElementById("adminPanel").style.display = "none";
+      document.getElementById("loginPanel").style.display = "block";
+    }
+
+    // Música do Admin
+    function adicionarMusica() {
+      const url = prompt("Cole o link da música (MP3):");
+      if (url) {
+        set(ref(db, 'musica'), { url: url });
+      }
+    }
+
+    function pararMusica() {
+      set(ref(db, 'musica'), null);
+    }
+
+    // Atualiza para todos os usuários
+    const musicaRef = ref(db, 'musica');
+    onValue(musicaRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data && data.url) {
+        snowSound.stop();
+        tickSound.stop();
+        if (musicPlayer) musicPlayer.stop();
+        musicPlayer = new Howl({ src: [data.url], loop: true, volume: 0.6 });
+        musicPlayer.play();
+      } else {
+        if (musicPlayer) musicPlayer.stop();
+        snowSound.play();
+        tickSound.play();
+      }
+    });
+  </script>
+</body>
+</html>
